@@ -678,26 +678,27 @@ class JobSeekerBackend:
     @staticmethod
     def parse_cv_with_ai(cv_text):
         prompt = f"""
-以下是候选人的完整简历内容，请从中提取结构化信息（如果缺失请留空）：
+Below is the cv text of a candidate. 
+Please extract structured information (leave blank if missing):
 cv_text: '''{cv_text}'''
 
-请输出 JSON，字段包括：
-- education_level（博士/硕士/本科/大专/高中）
+Please output JSON, fields including:
+- education_level(doctor/master/bachelor/associate/highschool)
 - major
-- graduation_status（应届生/往届生/在读）
-- university_background（985院校/211院校/海外院校/普通本科/其他）
+- graduation_status(fresh graduate/experienced/in study)
+- university_background(985 university/211 university/overseas university/regular university/other)
 - languages
 - certificates
 - hard_skills
 - soft_skills
-- work_experience（应届/1-3年/3-5年/5-10年/10年以上）
+- work_experience(fresh graduate/1-3 years/3-5 years/5-10 years/10+ years)
 - project_experience
 - location_preference
 - industry_preference
 - salary_expectation
 - benefits_expectation
 
-请直接返回 JSON，不要解释。
+Please return the result in the JSON format only, no extra explanation.
 """
 
         response = openai.chat.completions.create(
@@ -715,10 +716,10 @@ class JobMatcherBackend:
     """Main backend with FULL integration"""
     
     def fetch_real_jobs(self, search_query, location="", country="us", num_pages=1):
-        """从JSearch API获取真实职位数据"""
+        """Get actual job data from JSearch API"""
         try:
-            # JSearch API配置
-            API_KEY = "your_jsearch_api_key_here"  # 你需要从 https://jsearch.app/ 获取API密钥
+            # JSearch API configuration
+            API_KEY = "your_jsearch_api_key_here"  # You need to get api key from https://jsearch.app/
             BASE_URL = "https://jsearch.p.rapidapi.com/search"
             
             headers = {
@@ -741,22 +742,22 @@ class JobMatcherBackend:
                     data = response.json()
                     jobs = data.get('data', [])
                     all_jobs.extend(jobs)
-                    print(f"✅ 第 {page} 页获取到 {len(jobs)} 个职位")
+                    print(f"✅ Page {page} fetched {len(jobs)} jobs")
                 else:
-                    print(f"❌ API请求失败: {response.status_code}")
+                    print(f"❌ API request failed: {response.status_code}")
                     break
-                    
-            print(f"🎯 总共获取到 {len(all_jobs)} 个职位")
+            
+            print(f"🎯 Found total of {len(all_jobs)} positions")
             return all_jobs
             
         except Exception as e:
-            print(f"❌ 获取职位数据失败: {e}")
-            # 返回模拟数据作为备选
+            print(f"❌ Failed to fetch jobs: {e}")
+            # return simulated data as fallback
             return self.get_mock_jobs(search_query, location)
 
     def get_mock_jobs(self, search_query, location):
-        """返回模拟职位数据（当API不可用时使用）"""
-        print("🔄 使用模拟数据...")
+        """return mock job data (used when API is unavailable)"""
+        print("🔄 Using simulated data...")
         
         mock_jobs = [
             {
@@ -806,13 +807,13 @@ class JobMatcherBackend:
         return mock_jobs
 
     def calculate_job_match_score(self, job_seeker_data, job_data):
-        """计算职位匹配分数"""
+        """calcalate job match score between job seeker and job data"""
         try:
             score = 0
             max_score = 100
             matched_skills = []
             
-            # 1. 技能匹配 (40分)
+            # 1. Skill match (40%)
             job_seeker_skills = job_seeker_data.get('hard_skills', '').lower()
             job_description = job_data.get('job_description', '').lower()
             
@@ -820,13 +821,13 @@ class JobMatcherBackend:
                 skills_list = [skill.strip().lower() for skill in job_seeker_skills.split(',')]
                 for skill in skills_list:
                     if skill and skill in job_description:
-                        score += 5  # 每个匹配的技能加5分
+                        score += 5  # Each match score add 5 points
                         matched_skills.append(skill)
-                        if score >= 40:  # 技能分上限40分
+                        if score >= 40:  # Max skill points at 40
                             score = 40
                             break
             
-            # 2. 经验匹配 (20分)
+            # 2. Experience match (20%)
             job_seeker_experience = job_seeker_data.get('work_experience', '').lower()
             if 'senior' in job_data.get('job_title', '').lower() and 'senior' in job_seeker_experience.lower():
                 score += 20
@@ -835,9 +836,9 @@ class JobMatcherBackend:
             elif 'entry' in job_data.get('job_title', '').lower() and 'fresh' in job_seeker_experience.lower():
                 score += 20
             else:
-                score += 10  # 基础经验分
+                score += 10  # 10 points for general experience match
             
-            # 3. 地点匹配 (20分)
+            # 3. Location match (20%)
             job_seeker_location = job_seeker_data.get('location_preference', '').lower()
             job_location = job_data.get('job_city', '').lower()
             
@@ -845,9 +846,9 @@ class JobMatcherBackend:
                 if job_seeker_location in job_location or job_location in job_seeker_location:
                     score += 20
                 else:
-                    score += 5  # 地点不匹配但给基础分
+                    score += 5 # Unmatched location but give base score of 5
             
-            # 4. 职位名称匹配 (20分)
+            # 4. Job Title Match (20%)
             job_seeker_role = job_seeker_data.get('primary_role', '').lower()
             job_title = job_data.get('job_title', '').lower()
             
@@ -855,7 +856,7 @@ class JobMatcherBackend:
                 if job_seeker_role in job_title:
                     score += 20
                 else:
-                    # 检查搜索关键词匹配
+                    # Searching for keywords in job title
                     search_terms = job_seeker_data.get('simple_search_terms', '').lower()
                     if search_terms:
                         terms = [term.strip() for term in search_terms.split(',')]
@@ -864,7 +865,7 @@ class JobMatcherBackend:
                                 score += 15
                                 break
             
-            # 确保分数在0-100之间
+            # Make sure the score is between 0 and 100
             score = min(max(score, 0), 100)
             
             return {
@@ -876,7 +877,7 @@ class JobMatcherBackend:
             }
             
         except Exception as e:
-            print(f"❌ 计算匹配分数时出错: {e}")
+            print(f"❌ Error when calculating matching score: {e}")
             return {
                 'overall_score': 0,
                 'matched_skills': [],
@@ -886,7 +887,7 @@ class JobMatcherBackend:
             }
 
 def get_all_jobs_for_matching():
-    """获取所有猎头职位用于匹配"""
+    """Get all head hunter jobs for matching"""
     try:
         conn = sqlite3.connect('head_hunter_jobs.db')
         c = conn.cursor()
@@ -902,11 +903,11 @@ def get_all_jobs_for_matching():
         conn.close()
         return jobs
     except Exception as e:
-        st.error(f"获取职位失败: {e}")
+        st.error(f"Failed to get job positions: {e}")
         return []
 
 def get_all_job_seekers():
-    """获取所有求职者信息"""
+    """Get all job seekers information"""
     try:
         conn = sqlite3.connect('job_seeker.db')
         c = conn.cursor()
@@ -931,15 +932,15 @@ def get_all_job_seekers():
         seekers = c.fetchall()
         conn.close()
 
-        # 转换数据格式以匹配原有结构
+        # Change the structure to match the expected output
         formatted_seekers = []
         for seeker in seekers:
-            # 创建虚拟name字段（使用教育背景+专业）
+            # Create a virtual name field (using education background + major)
             virtual_name = f"求职者#{seeker[0]} - {seeker[1]}"
 
             formatted_seekers.append((
                 seeker[0],  # id
-                virtual_name,  # name (虚拟)
+                virtual_name,  # name (constructed)
                 seeker[3] or "",  # skills (hard_skills)
                 seeker[2] or "",  # experience (work_experience)
                 seeker[1] or "",  # education (education_level)
@@ -952,21 +953,22 @@ def get_all_job_seekers():
 
         return formatted_seekers
     except Exception as e:
-        st.error(f"获取求职者失败: {e}")
+        st.error(f"Failed to get job seekers: {e}")
         return []
     
 def analyze_match_simple(job_data, seeker_data):
-    """简化版匹配分析"""
-    match_score = 50  # 基础分数
+    """Simple match analysis between job and seeker"""
+    match_score = 50  # Basic Score
 
-    # 技能匹配
+    # Skills matching
     job_skills = str(job_data[4]).lower()
     seeker_skills = str(seeker_data[2]).lower()
     skill_match = len(set(job_skills.split()) & set(seeker_skills.split())) / max(len(job_skills.split()), 1)
     match_score += skill_match * 20
 
-    # 经验匹配
-    experience_map = {"应届": 0, "1-3年": 1, "3-5年": 2, "5-10年": 3, "10年以上": 4}
+    # Experience matching
+    experience_map = {"fresh graduate": 0, "1-3 years": 1, "3-5 years": 2, "5-10 years": 3, "10+ years": 4}
+    #experience_map = {"应届": 0, "1-3年": 1, "3-5年": 2, "5-10年": 3, "10年以上": 4}
     job_exp = job_data[11]
     seeker_exp = seeker_data[3]
 
@@ -974,13 +976,13 @@ def analyze_match_simple(job_data, seeker_data):
         exp_diff = abs(experience_map[job_exp] - experience_map[seeker_exp])
         match_score -= exp_diff * 5
 
-    # 行业匹配
+    # Industry matching
     job_industry = str(job_data[6]).lower()
     seeker_industry = str(seeker_data[6]).lower()
     if job_industry in seeker_industry or seeker_industry in job_industry:
         match_score += 10
 
-    # 地点匹配
+    # Location matching
     job_location = str(job_data[8]).lower()
     seeker_location = str(seeker_data[7]).lower()
     if job_location in seeker_location or seeker_location in job_location:
@@ -988,88 +990,99 @@ def analyze_match_simple(job_data, seeker_data):
 
     match_score = max(0, min(100, match_score))
 
-    # 根据分数生成分析
+    # Analyze based on score
     if match_score >= 80:
-        strengths = ["技能高度匹配", "经验符合要求", "行业相关性强"]
+        strengths = ["High skill match", "Experience meets requirements", "Strong industry relevance"]
+        #strengths = ["技能高度匹配", "经验符合要求", "行业相关性强"]
         gaps = []
-        recommendation = "强烈推荐面试"
+        recommendation = "Highly recommend for interview"
+        #recommendation = "强烈推荐面试"
     elif match_score >= 60:
-        strengths = ["核心技能匹配", "基础经验符合"]
-        gaps = ["部分技能需要提升", "经验略有差距"]
-        recommendation = "推荐进一步沟通"
+        strengths = ["Core skills match", "Basic experience aligns"]
+        #strengths = ["核心技能匹配", "基础经验符合"]
+        gaps = ["Some skills need improvement", "Slight experience gap"]
+        #gaps = ["部分技能需要提升", "经验略有差距"]
+        recommendation = "Recommend further communication"
+        #recommendation = "推荐进一步沟通"
     else:
-        strengths = ["有相关背景"]
-        gaps = ["技能匹配度较低", "经验要求不符"]
-        recommendation = "需要进一步评估"
+        strengths = ["Has relevant background"]
+        #strengths = ["有相关背景"]
+        gaps = ["Low skill match", "Experience does not meet requirements"]
+        #gaps = ["技能匹配度较低", "经验要求不符"]
+        recommendation = "Further evaluation needed"
+        #recommendation = "需要进一步评估"
 
     return {
         "match_score": int(match_score),
         "key_strengths": strengths,
         "potential_gaps": gaps,
         "recommendation": recommendation,
-        "salary_match": "良好" if match_score > 70 else "一般",
-        "culture_fit": "高" if match_score > 75 else "中"
+        "salary_match": "Good" if match_score > 70 else "Average",
+        #"salary_match": "良好" if match_score > 70 else "一般",
+        "culture_fit": "High" if match_score > 75 else "Medium"
+        #"culture_fit": "高" if match_score > 75 else "中"
     }
 
 def show_match_statistics():
-    """显示匹配统计"""
-    st.header("📊 匹配统计")
+    """Show match statistics"""
+    st.header("📊 Match Statistics")
 
     jobs = get_all_jobs_for_matching()
     seekers = get_all_job_seekers()
 
     if not jobs or not seekers:
-        st.info("暂无统计数据")
+        st.info("No statistics data available")
         return
 
-    # 行业分布
-    st.subheader("🏭 职位行业分布")
+    # Industry distribution
+    st.subheader("🏭 Industry Distribution")
     industry_counts = {}
     for job in jobs:
-        industry = job[6] if job[6] else "未分类"
+        industry = job[6] if job[6] else "Not Specified"
         industry_counts[industry] = industry_counts.get(industry, 0) + 1
 
     for industry, count in industry_counts.items():
         percentage = (count / len(jobs)) * 100
-        st.write(f"• **{industry}:** {count} 个职位 ({percentage:.1f}%)")
+        st.write(f"• **{industry}:** {count} Positions ({percentage:.1f}%)")
 
-    # 经验要求分布
-    st.subheader("🎯 经验要求分布")
+    # Experience Level Distribution
+    st.subheader("🎯 Experience Level Distribution")
     experience_counts = {}
     for job in jobs:
-        experience = job[11] if job[11] else "未指定"
+        experience = job[11] if job[11] else "Not Specified"
         experience_counts[experience] = experience_counts.get(experience, 0) + 1
 
     for exp, count in experience_counts.items():
-        st.write(f"• **{exp}:** {count} 个职位")
+        st.write(f"• **{exp}:** {count} Positions")
 
 def show_instructions():
-    """显示使用说明"""
-    st.header("📖 使用说明")
+    """Display usage instructions"""
+    st.header("📖 Instructions")
 
     st.info("""
-    **Recruitment Match 使用指南:**
+    **Recruitment Match Instructions:**
 
-    1. **选择职位**: 从猎头模块发布的职位中选择一个进行匹配
-    2. **设置条件**: 调整最低匹配分数和显示数量
-    3. **开始匹配**: 系统会自动分析所有求职者与职位的匹配度
-    4. **查看结果**: 查看详细的匹配分析报告
-    5. **采取行动**: 联系候选人、安排面试
+    1. **Select Position**: Choose a position from the positions published by the headhunter module
+    2. **Set Conditions**: Adjust the minimum match score and display count
+    3. **Start Matching**: The system will automatically analyze the match between all job seekers and the position
+    4. **View Results**: View detailed match analysis report
+    5. **Take Action**: Contact candidates, schedule interviews
 
-    **匹配算法基于:**
-    • 技能匹配度 (硬技能)
-    • 经验符合度 (工作经验年限)
-    • 行业相关性 (行业偏好)
-    • 地点匹配度 (工作地点偏好)
-    • 综合评估分析
+    **Matching Algorithm Based on:**
+    • Skill Match (Hard Skills)
+    • Experience Fit (Work Experience Years)
+    • Industry Relevance (Industry Preferences)
+    • Location Match (Work Location Preferences)
+    • Comprehensive Assessment Analysis
 
-    **数据来源:**
-    • 职位信息: Head Hunter 模块发布的职位
-    • 求职者信息: Job Seeker 页面填写的信息
+    **Data Sources:**
+    • Position Information: Positions published by Head Hunter module
+    • Job Seeker Information: Information filled in Job Seeker page
     """)
 
+
 def get_jobs_for_interview():
-    """获取可用于面试的职位"""
+    """Get available positions for interviews"""
     try:
         conn = sqlite3.connect('head_hunter_jobs.db')
         c = conn.cursor()
@@ -1083,11 +1096,12 @@ def get_jobs_for_interview():
         conn.close()
         return jobs
     except Exception as e:
-        st.error(f"获取职位失败: {e}")
+        st.error(f"Failed to get positions: {e}")
         return []
 
+
 def get_job_seeker_profile():
-    """获取当前求职者信息"""
+    """Get current job seeker information"""
     try:
         conn = sqlite3.connect('job_seeker.db')
         c = conn.cursor()
@@ -1102,11 +1116,11 @@ def get_job_seeker_profile():
         conn.close()
         return profile
     except Exception as e:
-        st.error(f"获取求职者信息失败: {e}")
+        st.error(f"Failed to get job seeker information: {e}")
         return None
 
 def initialize_interview_session(job_data):
-    """初始化面试会话"""
+    """Initialize interview session"""
     if 'interview' not in st.session_state:
         st.session_state.interview = {
             'job_id': job_data[0],
@@ -1122,7 +1136,7 @@ def initialize_interview_session(job_data):
         }
 
 def generate_interview_question(job_data, seeker_profile, previous_qa=None):
-    """使用Azure OpenAI生成面试问题"""
+    """Generate interview questions using Azure OpenAI"""
     try:
         client = AzureOpenAI(
             azure_endpoint="https://hkust.azure-api.net",
@@ -1130,68 +1144,68 @@ def generate_interview_question(job_data, seeker_profile, previous_qa=None):
             api_key="7b567f8243bc4985a4e1f870092a3e60"
         )
 
-        # 准备职位信息
+        # Prepare position information
         job_info = f"""
-职位标题: {job_data[1]}
-公司: {job_data[5]}
-行业: {job_data[6]}
-经验要求: {job_data[7]}
-职位描述: {job_data[2]}
-主要职责: {job_data[3]}
-必备技能: {job_data[4]}
+Position Title: {job_data[1]}
+Company: {job_data[5]}
+Industry: {job_data[6]}
+Experience Requirement: {job_data[7]}
+Job Description: {job_data[2]}
+Main Responsibilities: {job_data[3]}
+Required Skills: {job_data[4]}
         """
 
-        # 准备求职者信息
+        # Prepare job seeker information
         seeker_info = ""
         if seeker_profile:
             seeker_info = f"""
-求职者背景:
-- 教育: {seeker_profile[0]}
-- 经验: {seeker_profile[1]}
-- 硬技能: {seeker_profile[2]}
-- 软技能: {seeker_profile[3]}
-- 项目经验: {seeker_profile[4]}
+Job Seeker Background:
+- Education: {seeker_profile[0]}
+- Experience: {seeker_profile[1]}
+- Hard Skills: {seeker_profile[2]}
+- Soft Skills: {seeker_profile[3]}
+- Project Experience: {seeker_profile[4]}
             """
 
-        # 构建提示词
+        # Build prompt
         if previous_qa:
             prompt = f"""
-作为专业的面试官，请基于以下信息继续面试：
+As a professional interviewer, please continue the interview based on the following information:
 
-【职位信息】
+【Position Information】
 {job_info}
 
-【求职者信息】
+【Job Seeker Information】
 {seeker_info}
 
-【之前的问答】
-问题: {previous_qa['question']}
-回答: {previous_qa['answer']}
+【Previous Q&A】
+Question: {previous_qa['question']}
+Answer: {previous_qa['answer']}
 
-请基于求职者的上一个回答，提出一个相关的跟进问题。问题应该：
-1. 深入探讨上一个回答中的关键点
-2. 评估求职者的思考深度和专业能力
-3. 与职位要求紧密相关
+Based on the job seeker's previous answer, please ask a relevant follow-up question. The question should:
+1. Deeply explore key points from the previous answer
+2. Assess the job seeker's thinking depth and professional abilities
+3. Be closely related to position requirements
 
-请只返回问题内容，不要添加其他说明。
+Please only return the question content, without additional explanations.
             """
         else:
             prompt = f"""
-作为专业的面试官，请为以下职位设计一个面试问题：
+As a professional interviewer, please design an interview question for the following position:
 
-【职位信息】
+【Position Information】
 {job_info}
 
-【求职者信息】
+【Job Seeker Information】
 {seeker_info}
 
-请提出一个专业的面试问题，问题应该：
-1. 评估与职位相关的核心能力
-2. 考察求职者的经验和技能
-3. 具有适当的挑战性
-4. 可以是行为面试问题、技术问题或情景问题
+Please ask a professional interview question that should:
+1. Assess core abilities related to the position
+2. Examine the job seeker's experience and skills
+3. Have appropriate challenge level
+4. Can be behavioral, technical, or situational questions
 
-请只返回问题内容，不要添加其他说明。
+Please only return the question content, without additional explanations.
             """
 
         response = client.chat.completions.create(
@@ -1199,7 +1213,7 @@ def generate_interview_question(job_data, seeker_profile, previous_qa=None):
             messages=[
                 {
                     "role": "system",
-                    "content": "你是一个专业的招聘面试官，擅长提出有针对性的面试问题来评估候选人的能力和适应性。"
+                    "content": "You are a professional recruitment interviewer, skilled at asking targeted interview questions to assess candidates' abilities and suitability."
                 },
                 {
                     "role": "user",
@@ -1213,10 +1227,10 @@ def generate_interview_question(job_data, seeker_profile, previous_qa=None):
         return response.choices[0].message.content.strip()
 
     except Exception as e:
-        return f"AI问题生成失败: {str(e)}"
-
+        return f"AI question generation failed: {str(e)}"
+    
 def evaluate_answer(question, answer, job_data):
-    """评估求职者的回答"""
+    """Evaluate job seeker's answer"""
     try:
         client = AzureOpenAI(
             azure_endpoint="https://hkust.azure-api.net",
@@ -1225,31 +1239,31 @@ def evaluate_answer(question, answer, job_data):
         )
 
         prompt = f"""
-请评估以下面试回答：
+Please evaluate the following interview answer:
 
-【职位信息】
-职位: {job_data[1]}
-公司: {job_data[5]}
-要求: {job_data[4]}
+【Position Information】
+Position: {job_data[1]}
+Company: {job_data[5]}
+Requirements: {job_data[4]}
 
-【面试问题】
+【Interview Question】
 {question}
 
-【求职者回答】
+【Job Seeker Answer】
 {answer}
 
-请从以下维度评估并给出分数（0-10分）：
-1. 回答的相关性和准确性
-2. 展示的专业知识和技能
-3. 沟通表达和逻辑性
-4. 与职位要求的匹配度
+Please evaluate and provide scores (0-10 points) from the following dimensions:
+1. Relevance and accuracy of the answer
+2. Professional knowledge and skills demonstrated
+3. Communication expression and logic
+4. Match with position requirements
 
-请用以下JSON格式返回评估结果：
+Please return evaluation results in the following JSON format:
 {{
-    "score": 分数,
-    "feedback": "具体反馈和建议",
-    "strengths": ["优势1", "优势2"],
-    "improvements": ["改进建议1", "改进建议2"]
+    "score": score,
+    "feedback": "Specific feedback and suggestions",
+    "strengths": ["Strength1", "Strength2"],
+    "improvements": ["Improvement suggestion1", "Improvement suggestion2"]
 }}
         """
 
@@ -1258,7 +1272,7 @@ def evaluate_answer(question, answer, job_data):
             messages=[
                 {
                     "role": "system",
-                    "content": "你是一个专业的面试评估专家，能够客观评估面试回答的质量。"
+                    "content": "You are a professional interview evaluation expert, capable of objectively assessing the quality of interview answers."
                 },
                 {
                     "role": "user",
@@ -1272,10 +1286,10 @@ def evaluate_answer(question, answer, job_data):
         return response.choices[0].message.content.strip()
 
     except Exception as e:
-        return f'{{"error": "评估失败: {str(e)}"}}'
+        return f'{{"error": "Evaluation failed: {str(e)}"}}'
 
 def generate_final_summary(interview_data, job_data):
-    """生成最终面试总结"""
+    """Generate final interview summary"""
     try:
         client = AzureOpenAI(
             azure_endpoint="https://hkust.azure-api.net",
@@ -1283,7 +1297,7 @@ def generate_final_summary(interview_data, job_data):
             api_key="7b567f8243bc4985a4e1f870092a3e60"
         )
 
-        # 准备所有问答记录
+        # Prepare all Q&A records
         qa_history = ""
         for i, (q, a, score_data) in enumerate(zip(
             interview_data['questions'],
@@ -1291,38 +1305,39 @@ def generate_final_summary(interview_data, job_data):
             interview_data['scores']
         )):
             qa_history += f"""
-问题 {i+1}: {q}
-回答: {a}
-评分: {score_data.get('score', 'N/A')}
-反馈: {score_data.get('feedback', '')}
+Question {i+1}: {q}
+Answer: {a}
+Score: {score_data.get('score', 'N/A')}
+Feedback: {score_data.get('feedback', '')}
             """
 
+
         prompt = f"""
-请为以下面试生成全面的总结报告：
+Please generate a comprehensive summary report for the following interview:
 
-【职位信息】
-职位: {job_data[1]}
-公司: {job_data[5]}
-要求: {job_data[4]}
+【Position Information】
+Position: {job_data[1]}
+Company: {job_data[5]}
+Requirements: {job_data[4]}
 
-【面试问答记录】
+【Interview Q&A Records】
 {qa_history}
 
-请提供：
-1. 总体表现评分（0-100分）
-2. 核心优势分析
-3. 需要改进的领域
-4. 针对该职位的匹配度评估
-5. 具体的提升建议
+Please provide:
+1. Overall performance score (0-100 points)
+2. Core strengths analysis
+3. Areas needing improvement
+4. Match assessment for this position
+5. Specific improvement suggestions
 
-请用以下JSON格式返回：
+Please return in the following JSON format:
 {{
-    "overall_score": 总体分数,
-    "summary": "总体评价总结",
-    "key_strengths": ["优势1", "优势2", "优势3"],
-    "improvement_areas": ["改进领域1", "改进领域2", "改进领域3"],
-    "job_fit": "高/中/低",
-    "recommendations": ["建议1", "建议2", "建议3"]
+    "overall_score": overall_score,
+    "summary": "Overall evaluation summary",
+    "key_strengths": ["Strength1", "Strength2", "Strength3"],
+    "improvement_areas": ["Improvement area1", "Improvement area2", "Improvement area3"],
+    "job_fit": "High/Medium/Low",
+    "recommendations": ["Recommendation1", "Recommendation2", "Recommendation3"]
 }}
         """
 
@@ -1331,7 +1346,7 @@ def generate_final_summary(interview_data, job_data):
             messages=[
                 {
                     "role": "system",
-                    "content": "你是一个专业的职业顾问，能够提供全面的面试表现分析和职业发展建议。"
+                    "content": "You are a professional career advisor, capable of providing comprehensive interview performance analysis and career development suggestions."
                 },
                 {
                     "role": "user",
@@ -1345,74 +1360,75 @@ def generate_final_summary(interview_data, job_data):
         return response.choices[0].message.content.strip()
 
     except Exception as e:
-        return f'{{"error": "总结生成失败: {str(e)}"}}'
+        return f'{{"error": "Summary generation failed: {str(e)}"}}'
 
 def ai_interview_page():
-    """AI面试页面"""
-    st.title("🤖 AI模拟面试")
+    """AI Interview Page"""
+    st.title("🤖 AI Mock Interview")
 
-    # 获取职位信息
+    # Get position information
     jobs = get_jobs_for_interview()
     seeker_profile = get_job_seeker_profile()
 
     if not jobs:
-        st.warning("❌ 没有可用的职位信息，请先在猎头模块发布职位")
+        st.warning("❌ No available position information, please first publish positions in the headhunter module")
         return
 
     if not seeker_profile:
-        st.warning("❌ 请先在Job Seeker页面填写您的信息")
+        st.warning("❌ Please first fill in your information on the Job Seeker page")
         return
 
-    st.success("🎯 选择您想要面试的职位开始模拟面试")
+    st.success("🎯 Select the position you want to interview for to start the mock interview")
 
-    # 选择职位
+    # Select position
     job_options = {f"#{job[0]} {job[1]} - {job[5]}": job for job in jobs}
-    selected_job_key = st.selectbox("选择面试职位", list(job_options.keys()))
+    selected_job_key = st.selectbox("Select Interview Position", list(job_options.keys()))
     selected_job = job_options[selected_job_key]
 
-    # 显示职位信息
-    with st.expander("📋 职位信息", expanded=True):
+    # Display position information
+    with st.expander("📋 Position Information", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
-            st.write(f"**职位:** {selected_job[1]}")
-            st.write(f"**公司:** {selected_job[5]}")
-            st.write(f"**行业:** {selected_job[6]}")
+            st.write(f"**Position:** {selected_job[1]}")
+            st.write(f"**Company:** {selected_job[5]}")
+            st.write(f"**Industry:** {selected_job[6]}")
         with col2:
-            st.write(f"**经验要求:** {selected_job[7]}")
-            st.write(f"**技能要求:** {selected_job[4][:100]}...")
+            st.write(f"**Experience Requirement:** {selected_job[7]}")
+            st.write(f"**Skill Requirements:** {selected_job[4][:100]}...")
 
-    # 初始化面试会话
+    # Initialize interview session
     initialize_interview_session(selected_job)
     interview = st.session_state.interview
 
-    # 开始/继续面试
+    # Start/continue interview
     if not interview['completed']:
         if interview['current_question'] == 0:
-            if st.button("🚀 开始模拟面试", type="primary", use_container_width=True):
-                # 生成第一个问题
-                with st.spinner("AI正在准备面试问题..."):
+            if st.button("🚀 Start Mock Interview", type="primary", use_container_width=True):
+                # Generate first question
+                with st.spinner("AI is preparing interview questions..."):
                     first_question = generate_interview_question(selected_job, seeker_profile)
-                    if not first_question.startswith("AI问题生成失败"):
+                    if not first_question.startswith("AI question generation failed"):
                         interview['questions'].append(first_question)
                         interview['current_question'] = 1
                         st.rerun()
                     else:
                         st.error(first_question)
 
-        # 显示当前问题
+        # Display current question
         if interview['current_question'] > 0 and interview['current_question'] <= interview['total_questions']:
-            st.subheader(f"❓ 问题 {interview['current_question']}/{interview['total_questions']}")
+            st.subheader(f"❓ Question {interview['current_question']}/{interview['total_questions']}")
             st.info(interview['questions'][-1])
 
-            # 回答输入
-            answer = st.text_area("您的回答:", height=150,
-                                placeholder="请详细描述您的回答...",
+            # Answer input
+            answer = st.text_area("Your Answer:", height=150,
+                                placeholder="Please describe your answer in detail...",
                                 key=f"answer_{interview['current_question']}")
 
-            if st.button("📤 提交回答", type="primary", use_container_width=True):
+
+            if st.button("📤 Submit Answer", type="primary", use_container_width=True):
                 if answer.strip():
-                    with st.spinner("AI正在评估您的回答..."):
-                        # 评估当前回答
+                    with st.spinner("AI is evaluating your answer..."):
+                        # Evaluate current answer
                         evaluation = evaluate_answer(
                             interview['questions'][-1],
                             answer,
@@ -1422,24 +1438,24 @@ def ai_interview_page():
                         try:
                             eval_data = json.loads(evaluation)
                             if 'error' not in eval_data:
-                                # 保存回答和评估
+                                # Save answer and evaluation
                                 interview['answers'].append(answer)
                                 interview['scores'].append(eval_data)
 
-                                # 检查是否完成所有问题
+                                # Check if all questions are completed
                                 if interview['current_question'] == interview['total_questions']:
-                                    # 生成最终总结
-                                    with st.spinner("AI正在生成面试总结..."):
+                                    # Generate final summary
+                                    with st.spinner("AI is generating interview summary..."):
                                         summary = generate_final_summary(interview, selected_job)
                                         try:
                                             summary_data = json.loads(summary)
                                             interview['summary'] = summary_data
                                             interview['completed'] = True
                                         except:
-                                            interview['summary'] = {"error": "总结解析失败"}
+                                            interview['summary'] = {"error": "Summary parsing failed"}
                                             interview['completed'] = True
                                 else:
-                                    # 生成下一个问题
+                                    # Generate next question
                                     previous_qa = {
                                         'question': interview['questions'][-1],
                                         'answer': answer
@@ -1447,7 +1463,7 @@ def ai_interview_page():
                                     next_question = generate_interview_question(
                                         selected_job, seeker_profile, previous_qa
                                     )
-                                    if not next_question.startswith("AI问题生成失败"):
+                                    if not next_question.startswith("AI question generation failed"):
                                         interview['questions'].append(next_question)
                                         interview['current_question'] += 1
                                     else:
@@ -1457,72 +1473,72 @@ def ai_interview_page():
                             else:
                                 st.error(eval_data['error'])
                         except json.JSONDecodeError:
-                            st.error("评估结果解析失败")
+                            st.error("Evaluation result parsing failed")
                 else:
-                    st.warning("请输入您的回答")
+                    st.warning("Please enter your answer")
 
-            # 显示进度
+            # Display progress
             progress = interview['current_question'] / interview['total_questions']
             st.progress(progress)
-            st.write(f"进度: {interview['current_question']}/{interview['total_questions']} 题")
+            st.write(f"Progress: {interview['current_question']}/{interview['total_questions']} questions")
 
-    # 显示面试结果
+    # Display interview results
     if interview['completed'] and interview['summary']:
-        st.subheader("🎯 面试总结报告")
+        st.subheader("🎯 Interview Summary Report")
 
         summary = interview['summary']
 
         if 'error' in summary:
             st.error(summary['error'])
         else:
-            # 总体评分
+            # Overall score
             col1, col2, col3 = st.columns(3)
             with col1:
                 score = summary.get('overall_score', 0)
-                st.metric("总体评分", f"{score}/100")
+                st.metric("Overall Score", f"{score}/100")
             with col2:
-                st.metric("职位匹配度", summary.get('job_fit', 'N/A'))
+                st.metric("Job Fit", summary.get('job_fit', 'N/A'))
             with col3:
-                st.metric("回答问题", f"{len(interview['answers'])}/{interview['total_questions']}")
+                st.metric("Questions Answered", f"{len(interview['answers'])}/{interview['total_questions']}")
 
-            # 总体评价
-            st.write("### 📊 总体评价")
+            # Overall evaluation
+            st.write("### 📊 Overall Evaluation")
             st.info(summary.get('summary', ''))
 
-            # 核心优势
-            st.write("### ✅ 核心优势")
+            # Core strengths
+            st.write("### ✅ Core Strengths")
             strengths = summary.get('key_strengths', [])
             for strength in strengths:
                 st.write(f"🎯 {strength}")
 
-            # 改进领域
-            st.write("### 📈 改进建议")
+            # Improvement areas
+            st.write("### 📈 Improvement Suggestions")
             improvements = summary.get('improvement_areas', [])
             for improvement in improvements:
                 st.write(f"💡 {improvement}")
 
-            # 详细建议
-            st.write("### 🎯 职业发展建议")
+            # Detailed recommendations
+            st.write("### 🎯 Career Development Recommendations")
             recommendations = summary.get('recommendations', [])
             for rec in recommendations:
                 st.write(f"🌟 {rec}")
 
-            # 详细问答记录
-            with st.expander("📝 查看详细问答记录"):
+            # Detailed Q&A records
+            with st.expander("📝 View Detailed Q&A Records"):
                 for i, (question, answer, score_data) in enumerate(zip(
                     interview['questions'],
                     interview['answers'],
                     interview['scores']
                 )):
-                    st.write(f"#### 问题 {i+1}")
-                    st.write(f"**问题:** {question}")
-                    st.write(f"**回答:** {answer}")
+                    st.write(f"#### Question {i+1}")
+                    st.write(f"**Question:** {question}")
+                    st.write(f"**Answer:** {answer}")
                     if isinstance(score_data, dict):
-                        st.write(f"**评分:** {score_data.get('score', 'N/A')}/10")
-                        st.write(f"**反馈:** {score_data.get('feedback', '')}")
+                        st.write(f"**Score:** {score_data.get('score', 'N/A')}/10")
+                        st.write(f"**Feedback:** {score_data.get('feedback', '')}")
                     st.markdown("---")
 
-            # 重新开始面试
-            if st.button("🔄 重新开始面试", use_container_width=True):
+            # Restart interview
+            if st.button("🔄 Restart Interview", use_container_width=True):
                 del st.session_state.interview
                 st.rerun()

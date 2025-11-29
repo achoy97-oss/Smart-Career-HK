@@ -8,20 +8,20 @@ class JobSeekerDB:
         self.db_path = db_path
 
     def _connect(self):
-        """内部方法：建立数据库连接"""
+        """Internal method: establish database connection"""
         return sqlite3.connect(self.db_path)
 
     def get_job_seeker_by_id(self, job_seeker_id):
-        """根据 job_seeker_id 获取求职者数据"""
+        """Get job seeker data by job_seeker_id"""
         try:
             conn = self._connect()
             c = conn.cursor()
 
-            # 获取字段列表
+            # Get column list
             c.execute("PRAGMA table_info(job_seekers)")
             columns = [col[1] for col in c.fetchall()]
 
-            # 查询
+            # Query
             c.execute("SELECT * FROM job_seekers WHERE job_seeker_id = ?", (job_seeker_id,))
             result = c.fetchone()
 
@@ -30,15 +30,15 @@ class JobSeekerDB:
             if result:
                 return dict(zip(columns, result))
             else:
-                print(f"❌ 未找到 ID 为 {job_seeker_id} 的求职者")
+                print(f"❌ No job seeker found with ID {job_seeker_id}")
                 return None
 
         except Exception as e:
-            print(f"❌ 获取求职者数据时出错: {e}")
+            print(f"❌ Error getting job seeker data: {e}")
             return None
         
     def get_latest_job_seeker_id(self):
-        """获取最新的 job_seeker_id"""
+        """Get the latest job_seeker_id"""
         try:
             conn = self._connect()
             c = conn.cursor()
@@ -50,16 +50,16 @@ class JobSeekerDB:
             return result[0] if result else None
 
         except Exception as e:
-            print(f"❌ 获取最新求职者 ID 时出错: {e}")
+            print(f"❌ Error getting latest job seeker ID: {e}")
             return None
 
     def get_latest_job_seeker_data(self):
-        """获取最新求职者的完整数据"""
+        """Get complete data of the latest job seeker"""
         try:
             conn = self._connect()
             c = conn.cursor()
 
-            # 获取字段列表
+            # Get column list
             c.execute("PRAGMA table_info(job_seekers)")
             columns = [col[1] for col in c.fetchall()]
 
@@ -71,12 +71,13 @@ class JobSeekerDB:
             return dict(zip(columns, result)) if result else None
 
         except Exception as e:
-            print(f"❌ 获取最新求职者数据时出错: {e}")
+            print(f"❌ Error getting latest job seeker data: {e}")
             return None
+
 
 # Functions moved to the bottom
 def init_database():
-    """初始化求职者数据库"""
+    """Initialize job seeker database"""
     try:
         conn = sqlite3.connect('job_seeker.db')
         c = conn.cursor()
@@ -105,27 +106,27 @@ def init_database():
         """)
         conn.commit()
         conn.close()
-        print("✅ 求职者数据库初始化成功")
+        print("✅ Job seeker database initialized successfully")
     except Exception as e:
-        print(f"❌ 数据库初始化失败: {e}")
+        print(f"❌ Database initialization failed: {e}")
 
 def generate_job_seeker_id():
-    """生成唯一的求职者ID"""
+    """Generate unique job seeker ID"""
     return f"JS_{uuid.uuid4().hex[:8].upper()}"
 
 def save_job_seeker_info(education_level, major, graduation_status, university_background,
                         languages, certificates, hard_skills, soft_skills, work_experience,
                         project_experience, location_preference, industry_preference, 
                         salary_expectation, benefits_expectation, primary_role="", simple_search_terms=""):
-    """保存求职者信息到数据库并返回job_seeker_id"""
+    """Save job seeker information to database and return job_seeker_id"""
     try:
-        # 确保数据库已初始化
+        # Ensure database is initialized
         init_database()
         
         conn = sqlite3.connect('job_seeker.db')
         c = conn.cursor()
 
-        # 生成唯一的job_seeker_id
+        # Generate unique job_seeker_id
         job_seeker_id = generate_job_seeker_id()
 
         c.execute("""
@@ -147,7 +148,7 @@ def save_job_seeker_info(education_level, major, graduation_status, university_b
         conn.commit()
         conn.close()
         
-        print(f"✅ 数据保存成功，Job Seeker ID: {job_seeker_id}")
+        print(f"✅ Data saved successfully, Job Seeker ID: {job_seeker_id}")
         return job_seeker_id
         
     except sqlite3.Error as e:
@@ -158,8 +159,9 @@ def save_job_seeker_info(education_level, major, graduation_status, university_b
         return None
 
 
+
 def init_head_hunter_database():
-    """初始化猎头职位数据库"""
+    """Initialize headhunter positions database"""
     try:
         conn = sqlite3.connect('head_hunter_jobs.db')
         c = conn.cursor()
@@ -190,10 +192,10 @@ def init_head_hunter_database():
         conn.commit()
         conn.close()
     except Exception as e:
-        st.error(f"数据库初始化失败: {e}")
+        st.error(f"Database initialization failed: {e}")
 
 def save_head_hunter_job(job_data):
-    """保存猎头职位信息到数据库"""
+    """Save headhunter position information to database"""
     try:
         conn = sqlite3.connect('head_hunter_jobs.db')
         c = conn.cursor()
@@ -232,9 +234,9 @@ def save_head_hunter_job(job_data):
         return True
 
     except Exception as e:
-        st.error(f"保存职位失败: {e}")
+        st.error(f"Failed to save position: {e}")
         return False
-
+    
 class HeadhunterDB:
     def get_all_head_hunter_jobs(self):
         try:
@@ -245,7 +247,7 @@ class HeadhunterDB:
             conn.close()
             return data
         except Exception as e:
-            st.error(f"获取职位失败: {e}")
+            st.error(f"Failed to get job positions: {e}")
             return []
 
 

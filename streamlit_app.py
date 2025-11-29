@@ -56,13 +56,13 @@ if 'current_page' not in st.session_state:
 
 # APP UI
 def main_analyzer_page():
-    """主页 - Smart Career"""
+    """Main Page - Smart Career"""
     st.title("🎯 Smart Career")
     st.markdown("Upload your CV and let **GPT-4** find matching jobs globally, ranked by match quality!")
 
-    # 定义辅助函数
+    # Define helper functions
     def smart_select_match(value, options):
-        """智能匹配选择框选项"""
+        """Smart match select box options"""
         if not value:
             return 0
         
@@ -73,13 +73,14 @@ def main_analyzer_page():
         return 0
 
     def format_ai_data(data, default=""):
-        """格式化AI返回的数据"""
+        """Format AI returned data"""
         if isinstance(data, list):
             return ", ".join(data)
         elif isinstance(data, str):
             return data
         else:
             return default
+
 
     # Main Page - CV Upload Section
     st.header("📁 Upload Your CV")
@@ -88,7 +89,7 @@ def main_analyzer_page():
     # Initialize variables
     autofill_data = {}
     analysis_complete = False
-    ai_analysis = {}  # 初始化 ai_analysis
+    ai_analysis = {}  # Initialize ai_analysis
 
     if cv_file:
         st.success(f"✅ Uploaded: **{cv_file.name}**")
@@ -102,7 +103,7 @@ def main_analyzer_page():
                     
                     st.balloons()
 
-                    # 展示分析結果
+                    # Display analysis results
                     st.markdown("---")
                     st.subheader("🤖 GPT-4 Career Analysis")
 
@@ -147,45 +148,45 @@ def main_analyzer_page():
                             with cols[i % len(cols)]:
                                 st.info(f"✓ {strength}")
 
-                    # 提取并格式化数据
+                    # Extract and format data
                     autofill_data = {
-                        # 教育背景
+                        # Educational background
                         "education_level": format_ai_data(ai_analysis.get('education_level', '')),
                         "major": format_ai_data(ai_analysis.get('major', '')),
                         "graduation_status": format_ai_data(ai_analysis.get('graduation_status', '')),
                         "university_background": format_ai_data(ai_analysis.get('university_background', '')),
                         
-                        # 语言和证书
+                        # Languages and certificates
                         "languages": format_ai_data(ai_analysis.get('languages', '')),
                         "certificates": format_ai_data(ai_analysis.get('certificates', '')),
                         
-                        # 技能 - 直接使用检测到的技能
-                        "hard_skills": format_ai_data(skills),  # 使用检测到的技能
-                        "soft_skills": format_ai_data(ai_analysis.get('core_strengths', [])),  # 使用核心优势
+                        # Skills - directly use detected skills
+                        "hard_skills": format_ai_data(skills),  # Use detected skills
+                        "soft_skills": format_ai_data(ai_analysis.get('core_strengths', [])),  # Use core strengths
                         
-                        # 工作经验
+                        # Work experience
                         "work_experience": format_ai_data(ai_analysis.get('work_experience', '')),
                         "project_experience": format_ai_data(ai_analysis.get('project_experience', '')),
                         
-                        # 偏好
+                        # Preferences
                         "location_preference": format_ai_data(ai_analysis.get('location_preference', '')),
                         "industry_preference": format_ai_data(ai_analysis.get('industry_preference', '')),
                         
-                        # 薪资
+                        # Salary
                         "salary_expectation": format_ai_data(ai_analysis.get('salary_expectation', '')),
                         "benefits_expectation": format_ai_data(ai_analysis.get('benefits_expectation', '')),
                         
-                        # 新增字段
+                        # New fields
                         "primary_role": format_ai_data(ai_analysis.get('primary_role', '')),
                         "simple_search_terms": format_ai_data(ai_analysis.get('simple_search_terms', ''))
                     }
                     
                     analysis_complete = True
                     
-                    # 存储到session state
+                    # Store in session state
                     st.session_state.autofill_data = autofill_data
                     st.session_state.analysis_complete = True
-                    st.session_state.ai_analysis = ai_analysis  # 保存ai_analysis供后续使用
+                    st.session_state.ai_analysis = ai_analysis  # Save ai_analysis for later use
 
                     st.success("🎉 Resume analysis complete! Form has been auto-filled with your information.")
 
@@ -214,7 +215,7 @@ def main_analyzer_page():
         st.markdown("---")
         st.success("💡 **Pro Tip:** Jobs are searched globally (not filtered by Hong Kong) and ranked by how well they match your profile!")
 
-    # ========== 表单区域 ==========
+    # ========== Form Area ==========
     if st.session_state.get('analysis_complete', False) or not cv_file:
         with st.form("job_seeker_form"):
             st.subheader("📝 Complete Your Profile")
@@ -224,10 +225,10 @@ def main_analyzer_page():
             
             st.markdown("Review and edit the auto-filled information from your CV analysis:")
 
-            # 使用session_state中的数据
+            # Use data from session_state
             current_data = st.session_state.get('autofill_data', {})
 
-            # 职业偏好 - 新增字段放在表单顶部
+            # Career Preferences - new fields at top of form
             st.subheader("🎯 Career Preferences")
             col_career1, col_career2 = st.columns(2)
             
@@ -241,7 +242,7 @@ def main_analyzer_page():
                                                   value=current_data.get("simple_search_terms", ""),
                                                   placeholder="e.g., python developer, project management, data science")
 
-            # 教育背景
+            # Educational background
             st.subheader("🎓 Educational background")
             col1, col2 = st.columns(2)
 
@@ -289,7 +290,7 @@ def main_analyzer_page():
                                            value=current_data.get("certificates", ""),
                                            placeholder="e.g., PMP, CFA, AWS Certified")
 
-            # 技能
+            # Skills
             st.subheader("💼 Skills")
             hard_skills = st.text_area("Technical Skills", 
                                      value=current_data.get("hard_skills", ""),
@@ -301,7 +302,7 @@ def main_analyzer_page():
                                      placeholder="e.g., Leadership, Communication, Problem Solving",
                                      height=100)
 
-            # 工作经验
+            # Work Experience
             st.subheader("📈 Work Experience")
             col3, col4 = st.columns(2)
 
@@ -322,7 +323,7 @@ def main_analyzer_page():
                                                 placeholder="Describe your key projects and achievements",
                                                 height=100)
 
-            # 工作偏好
+            # Work preferences
             st.subheader("📍 Work preferences")
             col5, col6 = st.columns(2)
 
@@ -342,7 +343,7 @@ def main_analyzer_page():
                                                   value=current_data.get("industry_preference", ""),
                                                   placeholder="e.g., Technology, Finance, Healthcare")
        
-            # 薪资福利期望
+            # Salary and benefits expectations
             st.subheader("💰 Salary and Benefits Expectations")
             salary_expectation = st.text_input("Expected Salary Range", 
                                              value=current_data.get("salary_expectation", ""),
@@ -354,7 +355,7 @@ def main_analyzer_page():
                                               height=80)
             
 
-            # 提交按钮
+            # Submit button
             submitted = st.form_submit_button("💾 Save Information", use_container_width=True)
 
             if submitted:
@@ -363,95 +364,95 @@ def main_analyzer_page():
                     location_preference == "Please select" or not primary_role.strip() or not simple_search_terms.strip()):
                     st.error("Please complete all required fields (marked with *)!")
                 else:
-                    # 保存到数据库
+                    # Save to database
                     job_seeker_id = save_job_seeker_info(
                         education_level, major, graduation_status, university_background,
                         languages, certificates, hard_skills, soft_skills, work_experience,
                         project_experience, location_preference, industry_preference,
                         salary_expectation, benefits_expectation,
-                        primary_role,  # 使用表单中的值
-                        simple_search_terms  # 使用表单中的值
+                        primary_role,  # Use value from form
+                        simple_search_terms  # Use value from form
                     )
                     
                     if job_seeker_id:
-                        # 保存到session state
+                        # Save to session state
                         st.session_state.job_seeker_id = job_seeker_id
                         st.success(f"✅ Information saved successfully! Your ID: {job_seeker_id}")
                         st.balloons()
                         
-                        # 显示成功信息
-                        st.info(f"🔑 您的求职者ID已保存: **{job_seeker_id}**")
-                        st.info("💡 您可以在 Job Match 页面使用此ID查看个性化职位推荐")
+                        # Display success message
+                        st.info(f"🔑 Your job seeker ID has been saved: **{job_seeker_id}**")
+                        st.info("💡 You can use this ID on the Job Match page to view personalized job recommendations")
                     else:
                         st.error("❌ Failed to save information, please try again")
 
-    """保存求职者信息到数据库"""
+    """Save job seeker information to database"""
 
 def job_recommendations_page(job_seeker_id=None):
-    """职位推荐页面 - 使用真实API数据"""
-    st.title("💼 个性化职位推荐")
+    """Job Recommendations Page - Using Real API Data"""
+    st.title("💼 Personalized Job Recommendations")
 
-    # 获取求职者数据 - 添加错误处理
+    # Get job seeker data - add error handling
     job_seeker_data = None
     try:
         if job_seeker_id:
             job_seeker_data = db.get_job_seeker_by_id(job_seeker_id)
         else:
-            # 如果没有提供ID，尝试获取最新记录
+            # If no ID provided, try to get latest record
             job_seeker_data = db.get_latest_job_seeker_data()
             
     except Exception as e:
-        st.error(f"获取求职者数据时出错: {e}")
+        st.error(f"Error getting job seeker data: {e}")
         return
 
     if not job_seeker_data:
-        st.error("未找到求职者信息，请先填写个人信息")
-        st.info("请在 Job Seeker 页面填写您的信息")
+        st.error("No job seeker information found, please fill in your personal information first")
+        st.info("Please fill in your information on the Job Seeker page")
         
-        # 显示调试信息
-        with st.expander("🔍 调试信息"):
-            st.write(f"提供的 job_seeker_id: {job_seeker_id}")
-            st.write("尝试获取最新记录...")
+        # Display debug information
+        with st.expander("🔍 Debug Information"):
+            st.write(f"Provided job_seeker_id: {job_seeker_id}")
+            st.write("Trying to get latest record...")
             latest_id = db.get_latest_job_seeker_id()
-            st.write(f"最新记录ID: {latest_id}")
+            st.write(f"Latest record ID: {latest_id}")
             
         return
 
-    # 显示个人信息摘要
-    with st.expander("👤 您的个人信息"):
+    # Display personal information summary
+    with st.expander("👤 Your Personal Information"):
         col1, col2 = st.columns(2)
         with col1:
-            st.write(f"**学历:** {job_seeker_data.get('education_level', 'N/A')}")
-            st.write(f"**专业:** {job_seeker_data.get('major', 'N/A')}")
-            st.write(f"**经验:** {job_seeker_data.get('work_experience', 'N/A')}")
-            st.write(f"**主要角色:** {job_seeker_data.get('primary_role', 'N/A')}")
+            st.write(f"**Education:** {job_seeker_data.get('education_level', 'N/A')}")
+            st.write(f"**Major:** {job_seeker_data.get('major', 'N/A')}")
+            st.write(f"**Experience:** {job_seeker_data.get('work_experience', 'N/A')}")
+            st.write(f"**Primary Role:** {job_seeker_data.get('primary_role', 'N/A')}")
         with col2:
-            st.write(f"**地点偏好:** {job_seeker_data.get('location_preference', 'N/A')}")
-            st.write(f"**行业偏好:** {job_seeker_data.get('industry_preference', 'N/A')}")
-            st.write(f"**搜索关键词:** {job_seeker_data.get('simple_search_terms', 'N/A')}")
+            st.write(f"**Location Preference:** {job_seeker_data.get('location_preference', 'N/A')}")
+            st.write(f"**Industry Preference:** {job_seeker_data.get('industry_preference', 'N/A')}")
+            st.write(f"**Search Keywords:** {job_seeker_data.get('simple_search_terms', 'N/A')}")
 
-    # 显示技能信息
-    with st.expander("💼 技能信息"):
+    # Display skill information
+    with st.expander("💼 Skill Information"):
         col1, col2 = st.columns(2)
         with col1:
-            st.write("**技术技能:**")
+            st.write("**Technical Skills:**")
             hard_skills = job_seeker_data.get('hard_skills', '')
             if hard_skills:
                 skills_list = [skill.strip() for skill in hard_skills.split(',')]
-                for skill in skills_list[:10]:  # 显示前10个技能
+                for skill in skills_list[:10]:  # Show first 10 skills
                     st.write(f"• {skill}")
         with col2:
-            st.write("**核心优势:**")
+            st.write("**Core Strengths:**")
             soft_skills = job_seeker_data.get('soft_skills', '')
             if soft_skills:
                 strengths_list = [strength.strip() for strength in soft_skills.split(',')]
-                for strength in strengths_list[:5]:  # 显示前5个核心优势
+                for strength in strengths_list[:5]:  # Show first 5 core strengths
                     st.write(f"• {strength}")
 
     # ----------------------------------------
     # 🔍 Job Search Settings
     # ----------------------------------------
-    st.subheader("🔍 搜索职位设置")
+    st.subheader("🔍 Job Search Settings")
 
     # Pre-fill defaults using job seeker data
     default_search = (
@@ -465,21 +466,21 @@ def job_recommendations_page(job_seeker_id=None):
 
     with col1:
         search_query = st.text_input(
-            "职位关键词*",
+            "Job Keywords*",
             value=default_search,
-            placeholder="例如: software engineer, data analyst"
+            placeholder="e.g.: software engineer, data analyst"
         )
 
     with col2:
         location = st.text_input(
-            "城市/地区",
+            "City/Region",
             value=default_location,
-            placeholder="例如: New York, London"
+            placeholder="e.g.: New York, London"
         )
 
     with col3:
         country = st.selectbox(
-            "国家代码",
+            "Country Code",
             ["hk", "us", "gb", "ca", "au", "sg"],
             index=0
         )
@@ -488,7 +489,7 @@ def job_recommendations_page(job_seeker_id=None):
 
     with col4:
         employment_types = st.multiselect(
-            "工作类型",
+            "Employment Type",
             ["FULLTIME", "PARTTIME", "CONTRACTOR"],
             default=["FULLTIME"]
         )
@@ -804,109 +805,109 @@ def job_recommendations_page(job_seeker_id=None):
             st.warning("⚠️ No matched jobs found. Please try adjusting your search criteria.")
 
 def enhanced_head_hunter_page():
-    """增强的猎头页面 - 职位发布和管理"""
+    """Enhanced Head Hunter Page - Job Publishing and Management"""
     st.title("🎯 Head Hunter Portal")
 
-    # 页面选择
+    # Page selection
     page_option = st.sidebar.radio(
-        "选择功能",
-        ["发布新职位", "查看已发布职位", "职位统计"]
+        "Select Function",
+        ["Publish New Position", "View Published Positions", "Position Statistics"]
     )
 
-    if page_option == "发布新职位":
+    if page_option == "Publish New Position":
         publish_new_job()
-    elif page_option == "查看已发布职位":
+    elif page_option == "View Published Positions":
         view_published_jobs()
-    elif page_option == "职位统计":
+    elif page_option == "Position Statistics":
         show_job_statistics()
 
 def publish_new_job():
-    """发布新职位表单"""
-    st.header("📝 发布新职位")
+    """Publish New Position Form"""
+    st.header("📝 Publish New Position")
 
     with st.form("head_hunter_job_form"):
-        # 职位基本信息
-        st.subheader("🎯 职位基本信息")
+        # Basic Position Information
+        st.subheader("🎯 Basic Position Information")
 
         col1, col2 = st.columns(2)
         with col1:
-            job_title = st.text_input("职位标题*", placeholder="例如：高级前端工程师")
+            job_title = st.text_input("Position Title*", placeholder="e.g.: Senior Frontend Engineer")
         with col2:
-            employment_type = st.selectbox("雇佣类型*", ["请选择", "全职", "兼职", "合同", "实习"])
+            employment_type = st.selectbox("Employment Type*", ["Please select", "Full-time", "Part-time", "Contract", "Internship"])
 
-        job_description = st.text_area("职位描述*", height=100,
-                                      placeholder="详细介绍职位的主要内容和团队情况...")
+        job_description = st.text_area("Job Description*", height=100,
+                                      placeholder="Detailed introduction of position main content and team situation...")
 
-        main_responsibilities = st.text_area("主要职责*", height=100,
-                                           placeholder="用要点列出主要职责，每行一个职责...")
+        main_responsibilities = st.text_area("Main Responsibilities*", height=100,
+                                           placeholder="List main responsibilities with bullet points, one per line...")
 
-        required_skills = st.text_area("必备技能与资格*", height=100,
-                                     placeholder="例如：5年以上经验，精通React.js，计算机科学学位...")
+        required_skills = st.text_area("Required Skills & Qualifications*", height=100,
+                                     placeholder="e.g.: 5+ years experience, proficient in React.js, Computer Science degree...")
 
-        # 公司与客户信息
-        st.subheader("🏢 公司与客户信息")
+        # Company and Client Information
+        st.subheader("🏢 Company and Client Information")
 
         col3, col4 = st.columns(2)
         with col3:
-            client_company = st.text_input("客户公司名称*", placeholder="公司官方名称")
-            industry = st.selectbox("行业*", ["请选择", "科技", "金融", "咨询", "医疗", "教育", "制造", "零售", "其他"])
+            client_company = st.text_input("Client Company Name*", placeholder="Company official name")
+            industry = st.selectbox("Industry*", ["Please select", "Technology", "Finance", "Consulting", "Healthcare", "Education", "Manufacturing", "Retail", "Other"])
         with col4:
-            work_location = st.selectbox("工作地点*", ["请选择", "香港", "内地", "海外", "远程"])
-            company_size = st.selectbox("公司规模*", ["请选择", "初创公司(1-50)", "中小型企业(51-200)", "大型企业(201-1000)", "跨国公司(1000+)"])
+            work_location = st.selectbox("Work Location*", ["Please select", "Hong Kong", "Mainland China", "Overseas", "Remote"])
+            company_size = st.selectbox("Company Size*", ["Please select", "Startup (1-50)", "SME (51-200)", "Large Enterprise (201-1000)", "Multinational (1000+)"])
 
-        work_type = st.selectbox("工作类型*", ["请选择", "远程", "混合", "办公室"])
+        work_type = st.selectbox("Work Type*", ["Please select", "Remote", "Hybrid", "Office"])
 
-        # 雇佣详情
-        st.subheader("💼 雇佣详情")
+        # Employment Details
+        st.subheader("💼 Employment Details")
 
         col5, col6 = st.columns(2)
         with col5:
-            experience_level = st.selectbox("经验级别*", ["请选择", "应届", "1-3年", "3-5年", "5-10年", "10年以上"])
+            experience_level = st.selectbox("Experience Level*", ["Please select", "Fresh Graduate", "1-3 years", "3-5 years", "5-10 years", "10+ years"])
         with col6:
-            visa_support = st.selectbox("签证支持", ["不提供", "工作签证", "协助办理", "需自有签证"])
+            visa_support = st.selectbox("Visa Support", ["Not provided", "Work Visa", "Assistance provided", "Must have own visa"])
 
-        # 薪酬与申请方式
-        st.subheader("💰 薪酬与申请方式")
+        # Salary and Application Method
+        st.subheader("💰 Salary and Application Method")
 
         col7, col8, col9 = st.columns([2, 2, 1])
         with col7:
-            min_salary = st.number_input("最低薪资*", min_value=0, value=30000, step=5000)
+            min_salary = st.number_input("Minimum Salary*", min_value=0, value=30000, step=5000)
         with col8:
-            max_salary = st.number_input("最高薪资*", min_value=0, value=50000, step=5000)
+            max_salary = st.number_input("Maximum Salary*", min_value=0, value=50000, step=5000)
         with col9:
-            currency = st.selectbox("货币", ["HKD", "USD", "CNY", "EUR", "GBP"])
+            currency = st.selectbox("Currency", ["HKD", "USD", "CNY", "EUR", "GBP"])
 
-        benefits = st.text_area("福利待遇", height=80,
-                              placeholder="例如：医疗保险、年假15天、绩效奖金、股票期权...")
+        benefits = st.text_area("Benefits", height=80,
+                              placeholder="e.g.: Medical insurance, 15 days annual leave, performance bonus, stock options...")
 
-        application_method = st.text_area("申请方式*", height=80,
-                                        value="请将简历发送至 recruit@headhunter.com，邮件标题请注明申请职位",
-                                        placeholder="申请流程和联系方式...")
+        application_method = st.text_area("Application Method*", height=80,
+                                        value="Please send resume to recruit@headhunter.com, include position title in email subject",
+                                        placeholder="Application process and contact information...")
 
-        job_valid_until = st.date_input("职位发布有效期*",
+        job_valid_until = st.date_input("Position Posting Validity Period*",
                                       value=datetime.now().date() + pd.Timedelta(days=30))
 
-        # 提交按钮
-        submitted = st.form_submit_button("💾 发布职位", type="primary", use_container_width=True)
+        # Submit button
+        submitted = st.form_submit_button("💾 Publish Position", type="primary", use_container_width=True)
 
         if submitted:
-            # 验证必填字段
+            # Validate required fields
             required_fields = [
                 job_title, job_description, main_responsibilities, required_skills,
                 client_company, industry, work_location, work_type, company_size,
                 employment_type, experience_level, min_salary, max_salary, application_method
             ]
 
-            if "请选择" in [employment_type, industry, work_location, work_type, company_size, experience_level]:
-                st.error("请完成所有必填字段（标*号）！")
+            if "Please select" in [employment_type, industry, work_location, work_type, company_size, experience_level]:
+                st.error("Please complete all required fields (marked with *)!")
             elif not all(required_fields):
-                st.error("请完成所有必填字段（标*号）！")
+                st.error("Please complete all required fields (marked with *)!")
             elif min_salary >= max_salary:
-                st.error("最高薪资必须大于最低薪资！")
+                st.error("Maximum salary must be greater than minimum salary!")
             
-            # 在 Streamlit app 中修改这部分代码：
+            # Modify this part in Streamlit app:
             else:
-                # 创建字典对象
+                # Create dictionary object
                 job_data = {
                     'job_title': job_title,
                     'job_description': job_description,
@@ -928,201 +929,201 @@ def publish_new_job():
                     'job_valid_until': job_valid_until.strftime("%Y-%m-%d")
                 }
                 
-                # 保存到数据库 - 现在只传递一个参数
+                # Save to database - now only pass one parameter
                 success = save_head_hunter_job(job_data)
 
                 if success:
-                    st.success("✅ 职位发布成功！")
+                    st.success("✅ Position published successfully!")
                     st.balloons()
                 else:
-                    st.error("❌ 职位发布失败，请重试")
+                    st.error("❌ Position publishing failed, please try again")
 
 
 def view_published_jobs():
-    """查看已发布的职位"""
-    st.header("📋 已发布职位")
+    """View Published Positions"""
+    st.header("📋 Published Positions")
 
     jobs = db2.get_all_head_hunter_jobs()
 
     if not jobs:
-        st.info("尚未发布任何职位")
+        st.info("No positions published yet")
         return
 
-    st.success(f"已发布 {len(jobs)} 个职位")
+    st.success(f"Published {len(jobs)} positions")
 
-    # 搜索和筛选
+    # Search and filter
     col1, col2 = st.columns(2)
     with col1:
-        search_term = st.text_input("搜索职位标题或公司")
+        search_term = st.text_input("Search position title or company")
     with col2:
-        filter_industry = st.selectbox("按行业筛选", ["所有行业"] + ["科技", "金融", "咨询", "医疗", "教育", "制造", "零售", "其他"])
+        filter_industry = st.selectbox("Filter by industry", ["All industries"] + ["Technology", "Finance", "Consulting", "Healthcare", "Education", "Manufacturing", "Retail", "Other"])
 
-    # 过滤职位
+    # Filter positions
     filtered_jobs = jobs
     if search_term:
         filtered_jobs = [job for job in jobs if search_term.lower() in job[2].lower() or search_term.lower() in job[6].lower()]
-    if filter_industry != "所有行业":
+    if filter_industry != "All industries":
         filtered_jobs = [job for job in filtered_jobs if job[7] == filter_industry]
 
     if not filtered_jobs:
-        st.warning("没有找到匹配的职位")
+        st.warning("No matching positions found")
         return
 
-    # 显示职位列表
+    # Display position list
     for job in filtered_jobs:
         with st.expander(f"#{job[0]} {job[2]} - {job[6]}", expanded=False):
             col1, col2 = st.columns(2)
 
             with col1:
-                st.write(f"**发布时间:** {job[1]}")
-                st.write(f"**公司:** {job[6]}")
-                st.write(f"**行业:** {job[7]}")
-                st.write(f"**地点:** {job[8]} ({job[9]})")
-                st.write(f"**规模:** {job[10]}")
+                st.write(f"**Published Time:** {job[1]}")
+                st.write(f"**Company:** {job[6]}")
+                st.write(f"**Industry:** {job[7]}")
+                st.write(f"**Location:** {job[8]} ({job[9]})")
+                st.write(f"**Size:** {job[10]}")
 
             with col2:
-                st.write(f"**类型:** {job[11]}")
-                st.write(f"**经验:** {job[12]}")
-                st.write(f"**薪资:** {job[14]:,} - {job[15]:,} {job[16]}")
-                st.write(f"**有效期:** {job[19]}")
-                if job[13] != "不提供":
-                    st.write(f"**签证:** {job[13]}")
+                st.write(f"**Type:** {job[11]}")
+                st.write(f"**Experience:** {job[12]}")
+                st.write(f"**Salary:** {job[14]:,} - {job[15]:,} {job[16]}")
+                st.write(f"**Valid Until:** {job[19]}")
+                if job[13] != "Not provided":
+                    st.write(f"**Visa:** {job[13]}")
 
-            st.write("**描述:**")
+            st.write("**Description:**")
             st.write(job[3][:200] + "..." if len(job[3]) > 200 else job[3])
 
 def show_job_statistics():
-    """显示职位统计"""
-    st.header("📊 职位统计")
+    """Display Position Statistics"""
+    st.header("📊 Position Statistics")
 
     jobs = db2.get_all_head_hunter_jobs()
 
     if not jobs:
-        st.info("尚无统计数据")
+        st.info("No statistics available yet")
         return
 
-    # 基本统计
+    # Basic statistics
     col1, col2, col3, col4 = st.columns(4)
     with col1:
-        st.metric("总职位数", len(jobs))
+        st.metric("Total Positions", len(jobs))
     with col2:
         active_jobs = len([job for job in jobs if datetime.strptime(job[19], "%Y-%m-%d").date() >= datetime.now().date()])
-        st.metric("有效职位", active_jobs)
+        st.metric("Active Positions", active_jobs)
     with col3:
         expired_jobs = len(jobs) - active_jobs
-        st.metric("过期职位", expired_jobs)
+        st.metric("Expired Positions", expired_jobs)
     with col4:
         avg_salary = sum((job[14] + job[15]) / 2 for job in jobs) / len(jobs)
-        st.metric("平均薪资", f"{avg_salary:,.0f}")
+        st.metric("Average Salary", f"{avg_salary:,.0f}")
 
-    # 行业分布
-    st.subheader("🏭 行业分布")
+    # Industry distribution
+    st.subheader("🏭 Industry Distribution")
     industry_counts = {}
     for job in jobs:
         industry = job[7]
         industry_counts[industry] = industry_counts.get(industry, 0) + 1
 
     for industry, count in industry_counts.items():
-        st.write(f"• **{industry}:** {count} 个职位 ({count/len(jobs)*100:.1f}%)")
+        st.write(f"• **{industry}:** {count} positions ({count/len(jobs)*100:.1f}%)")
 
-    # 地点分布
-    st.subheader("📍 工作地点分布")
+    # Location distribution
+    st.subheader("📍 Work Location Distribution")
     location_counts = {}
     for job in jobs:
         location = job[8]
         location_counts[location] = location_counts.get(location, 0) + 1
 
     for location, count in location_counts.items():
-        st.write(f"• **{location}:** {count} 个职位")
+        st.write(f"• **{location}:** {count} positions")
 
-    # 经验要求分布
-    st.subheader("🎯 经验要求分布")
+    # Experience requirement distribution
+    st.subheader("🎯 Experience Requirement Distribution")
     experience_counts = {}
     for job in jobs:
         experience = job[12]
         experience_counts[experience] = experience_counts.get(experience, 0) + 1
 
     for experience, count in experience_counts.items():
-        st.write(f"• **{experience}:** {count} 个职位")
+        st.write(f"• **{experience}:** {count} positions")
 
 def recruitment_match_dashboard():
-    """招聘匹配仪表板"""
+    """Recruitment Match Dashboard"""
     st.title("🎯 Recruitment Match Portal")
 
-    # 快速统计
+    # Quick statistics
     jobs = get_all_jobs_for_matching()
     seekers = get_all_job_seekers()
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("有效职位", len(jobs) if jobs else 0)
+        st.metric("Active Positions", len(jobs) if jobs else 0)
     with col2:
-        st.metric("求职者", len(seekers) if seekers else 0)
+        st.metric("Job Seekers", len(seekers) if seekers else 0)
     with col3:
-        st.metric("匹配就绪", "✅" if jobs and seekers else "❌")
+        st.metric("Match Ready", "✅" if jobs and seekers else "❌")
 
-    # 页面选择
+    # Page selection
     page_option = st.sidebar.radio(
-        "选择功能",
-        ["智能人才匹配", "匹配统计", "使用说明"]
+        "Select Function",
+        ["Smart Talent Matching", "Match Statistics", "Instructions"]
     )
 
-    if page_option == "智能人才匹配":
+    if page_option == "Smart Talent Matching":
         recruitment_match_page()
-    elif page_option == "匹配统计":
+    elif page_option == "Match Statistics":
         show_match_statistics()
     else:
         show_instructions()
 
 def recruitment_match_page():
-    """招聘匹配页面"""
-    st.title("🎯 Recruitment Match - 智能人才匹配")
+    """Recruitment Match Page"""
+    st.title("🎯 Recruitment Match - Smart Talent Matching")
 
-    # 获取数据
+    # Get data
     jobs = get_all_jobs_for_matching()
     seekers = get_all_job_seekers()
 
     if not jobs:
-        st.warning("❌ 没有可用的职位信息，请先在猎头模块发布职位")
+        st.warning("❌ No available position information, please first publish positions in the headhunter module")
         return
 
     if not seekers:
-        st.warning("❌ 没有可用的求职者信息，请先在Job Seeker页面填写信息")
+        st.warning("❌ No available job seeker information, please first fill in information on Job Seeker page")
         return
 
-    st.success(f"📊 系统中有 {len(jobs)} 个有效职位和 {len(seekers)} 个求职者")
+    st.success(f"📊 System has {len(jobs)} active positions and {len(seekers)} job seekers")
 
-    # 选择职位进行匹配
-    st.subheader("🔍 选择要匹配的职位")
+    # Select position for matching
+    st.subheader("🔍 Select Position to Match")
 
     job_options = {f"#{job[0]} {job[1]} - {job[5]}": job for job in jobs}
-    selected_job_key = st.selectbox("选择职位", list(job_options.keys()))
+    selected_job_key = st.selectbox("Select Position", list(job_options.keys()))
     selected_job = job_options[selected_job_key]
 
-    # 显示职位详情
-    with st.expander("📋 职位详情", expanded=True):
+    # Display position details
+    with st.expander("📋 Position Details", expanded=True):
         col1, col2 = st.columns(2)
         with col1:
-            st.write(f"**职位ID:** #{selected_job[0]}")
-            st.write(f"**公司:** {selected_job[5]}")
-            st.write(f"**行业:** {selected_job[6]}")
-            st.write(f"**经验要求:** {selected_job[11]}")
+            st.write(f"**Position ID:** #{selected_job[0]}")
+            st.write(f"**Company:** {selected_job[5]}")
+            st.write(f"**Industry:** {selected_job[6]}")
+            st.write(f"**Experience Requirement:** {selected_job[11]}")
         with col2:
-            st.write(f"**地点:** {selected_job[7]}")
-            st.write(f"**薪资:** {selected_job[13]:,}-{selected_job[14]:,} {selected_job[15]}")
-            st.write(f"**技能要求:** {selected_job[4][:100]}...")
+            st.write(f"**Location:** {selected_job[7]}")
+            st.write(f"**Salary:** {selected_job[13]:,}-{selected_job[14]:,} {selected_job[15]}")
+            st.write(f"**Skill Requirements:** {selected_job[4][:100]}...")
 
-    # 匹配选项
-    st.subheader("⚙️ 匹配设置")
+    # Match options
+    st.subheader("⚙️ Match Settings")
     col1, col2 = st.columns(2)
     with col1:
-        min_match_score = st.slider("最低匹配分数", 0, 100, 60)
+        min_match_score = st.slider("Minimum Match Score", 0, 100, 60)
     with col2:
-        max_candidates = st.slider("显示前N个候选人", 1, 20, 10)
+        max_candidates = st.slider("Display Top N Candidates", 1, 20, 10)
 
-    # 执行匹配
-    if st.button("🚀 开始智能匹配", type="primary", use_container_width=True):
-        st.subheader("📈 匹配结果")
+    # Execute matching
+    if st.button("🚀 Start Smart Matching", type="primary", use_container_width=True):
+        st.subheader("📈 Match Results")
 
         progress_bar = st.progress(0)
         results = []
@@ -1131,7 +1132,7 @@ def recruitment_match_page():
             progress = (i + 1) / min(len(seekers), max_candidates)
             progress_bar.progress(progress)
 
-            # 使用简化匹配算法
+            # Use simplified matching algorithm
             analysis_result = analyze_match_simple(selected_job, seeker)
             match_score = analysis_result.get('match_score', 0)
 
@@ -1149,143 +1150,143 @@ def recruitment_match_page():
 
         progress_bar.empty()
 
-        # 显示结果
+        # Display results
         if results:
             results.sort(key=lambda x: x['match_score'], reverse=True)
-            st.success(f"🎉 找到 {len(results)} 个匹配的候选人 (分数 ≥ {min_match_score})")
+            st.success(f"🎉 Found {len(results)} matching candidates (score ≥ {min_match_score})")
 
             for i, result in enumerate(results):
                 score_color = "🟢" if result['match_score'] >= 80 else "🟡" if result['match_score'] >= 60 else "🔴"
 
-                with st.expander(f"{score_color} #{i+1} {result['name']} - {result['match_score']}分", expanded=i < 2):
+                with st.expander(f"{score_color} #{i+1} {result['name']} - {result['match_score']} points", expanded=i < 2):
                     col1, col2 = st.columns(2)
 
                     with col1:
-                        st.write("**候选人信息:**")
+                        st.write("**Candidate Information:**")
                         st.write(f"**ID:** #{result['seeker_id']}")
-                        st.write(f"**教育背景:** {result['education']}")
-                        st.write(f"**工作经验:** {result['experience']}")
-                        st.write(f"**当前背景:** {result['current_title']}")
-                        st.write(f"**技能:** {result['raw_data'][2][:100]}...")
+                        st.write(f"**Education Background:** {result['education']}")
+                        st.write(f"**Work Experience:** {result['experience']}")
+                        st.write(f"**Current Background:** {result['current_title']}")
+                        st.write(f"**Skills:** {result['raw_data'][2][:100]}...")
 
                     with col2:
-                        st.write("**匹配分析:**")
-                        st.write(f"**匹配分数:** {score_color} {result['match_score']}分")
-                        st.write(f"**薪资匹配:** {result['analysis'].get('salary_match', '一般')}")
-                        st.write(f"**文化契合:** {result['analysis'].get('culture_fit', '中')}")
+                        st.write("**Match Analysis:**")
+                        st.write(f"**Match Score:** {score_color} {result['match_score']} points")
+                        st.write(f"**Salary Match:** {result['analysis'].get('salary_match', 'Average')}")
+                        st.write(f"**Culture Fit:** {result['analysis'].get('culture_fit', 'Medium')}")
 
                         if 'key_strengths' in result['analysis']:
-                            st.write("**核心优势:**")
+                            st.write("**Core Strengths:**")
                             for strength in result['analysis']['key_strengths']:
                                 st.write(f"✅ {strength}")
 
                         if 'potential_gaps' in result['analysis']:
-                            st.write("**关注点:**")
+                            st.write("**Areas of Concern:**")
                             for gap in result['analysis']['potential_gaps']:
                                 st.write(f"⚠️ {gap}")
 
                     if 'recommendation' in result['analysis']:
-                        st.info(f"**推荐建议:** {result['analysis']['recommendation']}")
+                        st.info(f"**Recommendation:** {result['analysis']['recommendation']}")
 
-                    # 操作按钮
+                    # Action buttons
                     col_btn1, col_btn2 = st.columns(2)
                     with col_btn1:
-                        if st.button("📞 联系候选人", key=f"contact_{result['seeker_id']}"):
-                            st.success(f"已标记联系: {result['name']}")
+                        if st.button("📞 Contact Candidate", key=f"contact_{result['seeker_id']}"):
+                            st.success(f"Marked for contact: {result['name']}")
                     with col_btn2:
-                        if st.button("💼 安排面试", key=f"interview_{result['seeker_id']}"):
-                            st.success(f"已安排面试: {result['name']}")
+                        if st.button("💼 Schedule Interview", key=f"interview_{result['seeker_id']}"):
+                            st.success(f"Interview scheduled: {result['name']}")
         else:
-            st.warning("😔 没有找到匹配的候选人，请调整匹配条件")
+            st.warning("😔 No matching candidates found, please adjust matching conditions")
 
 def ai_interview_dashboard():
-    """AI面试仪表板"""
-    st.title("🤖 AI模拟面试系统")
+    """AI Interview Dashboard"""
+    st.title("🤖 AI Mock Interview System")
 
-    # 快速统计
+    # Quick statistics
     jobs = get_jobs_for_interview()
     seeker_profile = get_job_seeker_profile()
 
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("可用职位", len(jobs) if jobs else 0)
+        st.metric("Available Positions", len(jobs) if jobs else 0)
     with col2:
-        st.metric("个人资料", "✅" if seeker_profile else "❌")
+        st.metric("Personal Profile", "✅" if seeker_profile else "❌")
     with col3:
         if 'interview' in st.session_state:
             progress = st.session_state.interview['current_question']
             total = st.session_state.interview['total_questions']
-            st.metric("面试进度", f"{progress}/{total}")
+            st.metric("Interview Progress", f"{progress}/{total}")
         else:
-            st.metric("面试状态", "待开始")
+            st.metric("Interview Status", "Not Started")
 
-    # 页面选择
+    # Page selection
     page_option = st.sidebar.radio(
-        "选择功能",
-        ["开始模拟面试", "面试准备指导", "使用说明"]
+        "Select Function",
+        ["Start Mock Interview", "Interview Preparation Guide", "Instructions"]
     )
 
-    if page_option == "开始模拟面试":
+    if page_option == "Start Mock Interview":
         ai_interview_page()
-    elif page_option == "面试准备指导":
+    elif page_option == "Interview Preparation Guide":
         show_interview_guidance()
     else:
         show_interview_instructions()
 
 def show_interview_guidance():
-    """显示面试准备指导"""
-    st.header("🎯 面试准备指导")
+    """Display Interview Preparation Guide"""
+    st.header("🎯 Interview Preparation Guide")
 
     st.info("""
-    **面试准备建议:**
+    **Interview Preparation Suggestions:**
 
-    ### 📚 技术面试准备
-    1. **复习核心技能**: 确保掌握职位要求的关键技术
-    2. **准备项目案例**: 准备2-3个能展示您能力的项目
-    3. **练习编码题**: 针对技术职位准备算法和数据结构
+    ### 📚 Technical Interview Preparation
+    1. **Review Core Skills**: Ensure mastery of key technologies required for the position
+    2. **Prepare Project Cases**: Prepare 2-3 projects that demonstrate your capabilities
+    3. **Practice Coding Problems**: Prepare algorithms and data structures for technical positions
 
-    ### 💼 行为面试准备
-    1. **STAR法则**:  Situation-Task-Action-Result
-    2. **准备成功案例**: 展示您如何解决问题和创造价值
-    3. **了解公司文化**: 研究公司的价值观和工作方式
+    ### 💼 Behavioral Interview Preparation
+    1. **STAR Method**: Situation-Task-Action-Result
+    2. **Prepare Success Stories**: Show how you solve problems and create value
+    3. **Understand Company Culture**: Research company values and work style
 
-    ### 🎯 沟通技巧
-    1. **清晰表达**: 结构化您的回答
-    2. **积极倾听**: 确保理解问题的核心
-    3. **展示热情**: 表达对职位和公司的兴趣
+    ### 🎯 Communication Skills
+    1. **Clear Expression**: Structure your answers
+    2. **Active Listening**: Ensure understanding of question core
+    3. **Show Enthusiasm**: Express interest in position and company
     """)
 
 def show_interview_instructions():
-    """显示使用说明"""
-    st.header("📖 AI模拟面试使用说明")
+    """Display Usage Instructions"""
+    st.header("📖 AI Mock Interview Usage Instructions")
 
     st.info("""
-    **AI模拟面试功能指南:**
+    **AI Mock Interview Function Guide:**
 
-    ### 🚀 开始面试
-    1. **选择职位**: 从猎头发布的职位中选择一个进行模拟面试
-    2. **开始面试**: AI会根据职位要求生成相关问题
-    3. **回答问题**: 针对每个问题提供详细的回答
+    ### 🚀 Start Interview
+    1. **Select Position**: Choose a position from headhunter published positions for mock interview
+    2. **Start Interview**: AI will generate relevant questions based on position requirements
+    3. **Answer Questions**: Provide detailed answers for each question
 
-    ### 📊 面试流程
-    - **10个问题**: 包含技术、行为、情景等多种类型
-    - **实时评估**: AI会评估每个回答的质量
-    - **个性化问题**: 后续问题基于您之前的回答
+    ### 📊 Interview Process
+    - **10 Questions**: Includes various types like technical, behavioral, situational
+    - **Real-time Evaluation**: AI evaluates quality of each answer
+    - **Personalized Questions**: Follow-up questions based on your previous answers
 
-    ### 🎯 获得反馈
-    - **详细评分**: 每个问题的具体评分和反馈
-    - **总体评价**: 完整的面试表现总结
-    - **改进建议**: 针对性的职业发展建议
+    ### 🎯 Get Feedback
+    - **Detailed Scoring**: Specific scoring and feedback for each question
+    - **Overall Evaluation**: Complete interview performance summary
+    - **Improvement Suggestions**: Targeted career development advice
 
-    **提示**: 请确保在网络稳定的环境下使用，以便AI能正常生成问题和评估回答。
+    **Tip**: Please ensure use in stable network environment for AI to generate questions and evaluate answers normally.
     """)
 
-# 在侧边栏添加调试工具
+# Add debug tools in sidebar
 with st.sidebar:
     st.markdown("---")
-    st.subheader("🔧 数据库调试")
+    st.subheader("🔧 Database Debug")
     
-    if st.button("查看所有求职者记录"):
+    if st.button("View All Job Seeker Records"):
         try:
             conn = sqlite3.connect('job_seeker.db')
             c = conn.cursor()
@@ -1294,23 +1295,23 @@ with st.sidebar:
             conn.close()
             
             if results:
-                st.write("📋 所有求职者记录:")
+                st.write("📋 All Job Seeker Records:")
                 for record in results:
-                    st.write(f"- ID: {record[0]}, 时间: {record[1]}, 学历: {record[2]}, 角色: {record[3]}")
+                    st.write(f"- ID: {record[0]}, Time: {record[1]}, Education: {record[2]}, Role: {record[3]}")
             else:
-                st.write("暂无求职者记录")
+                st.write("No job seeker records yet")
         except Exception as e:
-            st.error(f"查询失败: {e}")
+            st.error(f"Query failed: {e}")
     
-    # 显示当前session状态
+    # Display current session state
     current_id = st.session_state.get('job_seeker_id')
     if current_id:
-        st.info(f"当前Session ID: **{current_id}**")
+        st.info(f"Current Session ID: **{current_id}**")
 
-# 侧边栏导航
-st.sidebar.title("🔍 导航")
+# Sidebar navigation
+st.sidebar.title("🔍 Navigation")
 
-# 导航按钮
+# Navigation buttons
 if st.sidebar.button("🏠 Job Seeker", use_container_width=True, key="main_btn"):
     st.session_state.current_page = "main"
 if st.sidebar.button("💼 Job Match", use_container_width=True):
@@ -1322,23 +1323,23 @@ if st.sidebar.button("🔍 Recruitment Match", use_container_width=True):
 if st.sidebar.button("🤖 AI Interview", use_container_width=True):
         st.session_state.current_page = "ai_interview"
 
-# 页面路由
+# Page routing
 if st.session_state.current_page == "main":
     main_analyzer_page()
 elif st.session_state.current_page == "job_recommendations":
     job_seeker_id = st.session_state.get('job_seeker_id')
 
-    # 检查是否有保存的求职者数据
+    # Check if there is saved job seeker data
     if not job_seeker_id:
-        st.warning("⚠️ 请先在 Job Seeker 页面保存您的个人信息")
-        st.info("👉 切换到 'Job Seeker' 页面填写并保存您的资料")
+        st.warning("⚠️ Please first save your personal information on the Job Seeker page")
+        st.info("👉 Switch to 'Job Seeker' page to fill in and save your information")
         
-        # 提供快捷跳转
-        if st.button("前往 Job Seeker 页面"):
+        # Provide quick jump
+        if st.button("Go to Job Seeker Page"):
             st.session_state.current_page = "main"
             st.rerun()
     else:
-        # 调用工作推荐页面函数
+        # Call job recommendations page function
         job_recommendations_page(job_seeker_id)
 
 elif st.session_state.current_page == "head_hunter":
@@ -1349,25 +1350,25 @@ elif st.session_state.current_page == "ai_interview":
     ai_interview_dashboard()
 
 
-# 侧边栏信息
+# Sidebar information
 st.sidebar.markdown("---")
 st.sidebar.markdown("""
-### 💡 使用说明
+### 💡 Usage Instructions
 
-1. **主页**: 智能简历-JD匹配分析器
-2. **Job Seeker**: 填写信息 → 自动推荐职位
-3. **Job Match**: 查看AI匹配的职位
-4. **Head Hunter**: 发布和管理招聘职位
-5. **Recruitment Match**: 智能匹配候选人与职位
-6. **AI Interview**: 模拟面试和技能评估
-7. **DB Verify**: 验证数据存储
+1. **Home**: Smart Resume-JD Matching Analyzer
+2. **Job Seeker**: Fill information → Automatic job recommendations
+3. **Job Match**: View AI-matched positions
+4. **Head Hunter**: Publish and manage recruitment positions
+5. **Recruitment Match**: Smart candidate-position matching
+6. **AI Interview**: Mock interviews and skill assessment
+7. **DB Verify**: Verify data storage
 """)
                     
 # Footer
 st.markdown("---")
 st.caption("🤖 Powered by GPT-4, Pinecone Vector Search, and RapidAPI LinkedIn Jobs")
 
-# 应用启动
+# Application startup
 if __name__ == "__main__":
-    # 确保应用正常运行
+    # Ensure application runs normally
     pass
