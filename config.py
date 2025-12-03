@@ -20,7 +20,8 @@ class Config:
     AZURE_MODEL = "gpt-4o-mini"
     
     # RapidAPI
-    RAPIDAPI_KEY = "2cae75c0f7msh1cb2821ab20dbabp11a63fjsn71bad75cf885"
+    #RAPIDAPI_KEY = "2cae75c0f7msh1cb2821ab20dbabp11a63fjsn71bad75cf885"
+    RAPIDAPI_KEY = "9331fddba1mshcf8b918c98307c3p1090c5jsndc50de14b9b4"
     
     # Settings
     MAX_JOBS_TO_FETCH = 50
