@@ -5,6 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import numpy as np
+import json
 from typing import List, Dict
 
 from backend import JobSeekerBackend
