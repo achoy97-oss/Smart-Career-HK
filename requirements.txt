@@ -8,3 +8,5 @@ transformers==4.37.2
 torch==2.5.0
 pandas==2.2.0
 requests==2.32.5
+matplotlib==3.7.2
+plotly==5.9.0
